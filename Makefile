@@ -2,12 +2,19 @@
 .DEFAULT: all
 .PHONY: all, clean, run, dirs, fresh, web, webwatch
 
+esbuild=./node_modules_dev/node_modules/.pnpm/node_modules/esbuild-windows-64/esbuild.exe
+tsc=./node_modules_dev/node_modules/typescript/bin/tsc
+httpserver=./node_modules_dev/node_modules/http-server/bin/http-server
+cleancss=./node_modules_dev/node_modules/clean-css-cli/bin/cleancss
+
+OUTDIR=build
+
 all: web
 
-fresh: clean debug
+fresh: clean web
 
 dirs:
-	@mkdir -p build/dev
+	@mkdir -p $(OUTDIR)/dev
 	@printf "  \xE2\x9c\x93 $@\n"
 
 clean:
@@ -15,24 +22,24 @@ clean:
 	@printf "  \xE2\x9c\x93 $@\n"
 
 view: web
-	@cd . && ./node_modules/.bin/http-server ./build -s -c-1 -p 2234 -o
+	@cd . && $(httpserver) ./build -s -c-1 -p 2234 -o
 
-web: dirs build/bundle.js build/bundle.css build/assets.info
+web: dirs $(OUTDIR)/bundle.js $(OUTDIR)/bundle.css $(OUTDIR)/assets.info
 
-webwatch: build/bundle.css build/assets.info
-	@cd . && ./node_modules/.bin/tsc -w
+webwatch: $(OUTDIR)/bundle.css $(OUTDIR)/assets.info
+	@cd . && $(tsc) -w
 
-build/bundle.js: $(shell find src -name *.ts* -type f)
-	@cd . && ./node_modules/.bin/tsc
+$(OUTDIR)/bundle.js: $(shell find src -name *.ts* -type f)
+	@cd . && $(tsc)
 	@printf "  \xE2\x9c\x93 tsc\n"
-	@cd . && ./node_modules/.bin/esbuild build/dev/main.js --bundle --log-level=warning --outfile=build/bundle.js
+	@cd . && $(esbuild) $(OUTDIR)/dev/main.js --bundle --log-level=warning --outfile=$(OUTDIR)/bundle.js
 	@printf "  \xE2\x9c\x93 $@\n"
 
-build/bundle.css: $(shell find src/css -name *.css -type f)
-	@cd . && ./node_modules/.bin/cleancss src/css/all.css  --skip-rebase -o build/bundle.css
+$(OUTDIR)/bundle.css: $(shell find src/css -name *.css -type f)
+	@cd . && $(cleancss) src/css/all.css  --skip-rebase -o $(OUTDIR)/bundle.css
 	@printf "  \xE2\x9c\x93 $@\n"
 
-build/assets.info: $(shell find assets -type f)
+$(OUTDIR)/assets.info: $(shell find assets -type f)
 	@cp -R assets/* build
-	@touch build/assets.info
+	@touch $(OUTDIR)/assets.info
 	@printf "  \xE2\x9c\x93 $@\n"

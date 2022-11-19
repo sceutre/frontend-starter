@@ -1,10 +1,8 @@
-import * as React from "react";
 import {useStore} from "../utils/flux.js";
 import {actionSpinnerOff, AppStore} from "./AppBacking.js";
 
 export function App() {
    const {spinner} = useStore(AppStore, ["spinner"]);
-   let ctx:React.ReactNode = null;
    return <div style={{
       display: "grid",
       grid: "1fr 1fr 1fr / 1fr 1fr 1fr",
